@@ -1,22 +1,47 @@
-name: New-Features Workflow
+name: Label Issues by Title
 
 on:
   issues:
     types: [opened]
 
 jobs:
-  label-feature:
+  label-issue:
     runs-on: ubuntu-latest
     permissions:
       issues: write
     steps:
-      - name: Add 'new application features' label to all new issues
+      - name: Label based on issue title
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['new application features']
-            })
+            const title = context.payload.issue.title.toLowerCase();
+
+            if (title.startsWith("bugs:")) {
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ["product-bug"]
+              });
+            } else if (title.startsWith("features:")) {
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ["new-feature"]
+              });
+            } else if (title.startsWith("refactor:")) {
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ["code-refactoring"]
+              });
+            } else {
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ["invalid"]
+              });
+            }
